@@ -1,9 +1,10 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
 )
 
 // Helpers
@@ -11,7 +12,7 @@ func getJson(url string, target interface{}) error {
 	fmt.Println("getting json from:", url)
 	r, err := http.Get(url)
 	if err != nil {
-    	return err
+		return err
 	}
 	defer r.Body.Close()
 	// fmt.Println("response:", r)
@@ -20,6 +21,15 @@ func getJson(url string, target interface{}) error {
 
 const apiKey = "7c5cb1bf8a097b3491633081c1e62ff8"
 const endpoint = "http://ws.audioscrobbler.com/2.0/?method="
+
+func getLastFMJson(query, propertyName, propertyValue string, limit int, target interface{}) {
+	url := endpoint + query + "&api_key=" + apiKey + "&" + propertyName +
+		"=" + propertyValue + "&limit=" + strconv.Itoa(limit) + "&format=json"
+	error := getJson(url, &target)
+	if error != nil {
+		fmt.Println(error)
+	}
+}
 
 type Artist struct {
 	Name string
@@ -38,7 +48,7 @@ type Artist struct {
 }
 
 // Get Similar Artists to Artist
-func getSimilarArtists(propertyName, propertyValue string) []Artist {
+func getSimilarArtists(propertyName, propertyValue string, count int) []Artist {
 	type Response struct {
 		Similarartists struct {
 			Artist_info []Artist `json:"artist"`
@@ -46,25 +56,20 @@ func getSimilarArtists(propertyName, propertyValue string) []Artist {
 	}
 
 	similarArtists := Response{}
-	url := endpoint + "artist.getsimilar&api_key=" +
-			apiKey + "&" + propertyName + "=" + propertyValue + "&format=json"
-    error := getJson(url, &similarArtists)
-	if error != nil {
-		fmt.Println(error)
-	}
+	getLastFMJson("artist.getsimilar", propertyName, propertyValue, count, &similarArtists)
 	return similarArtists.Similarartists.Artist_info
 }
 
-func getSimilarArtistsByName(name string) []Artist {
-	return getSimilarArtists("artist", name)
+func getSimilarArtistsByName(name string, count int) []Artist {
+	return getSimilarArtists("artist", name, count)
 }
 
-func getSimilarArtistsByID(mbid string) []Artist {
-	return getSimilarArtists("mbid", mbid)
+func getSimilarArtistsByID(mbid string, count int) []Artist {
+	return getSimilarArtists("mbid", mbid, count)
 }
 
 // Get Artists from user's Library
-func getArtistsForUser(user string) []Artist {
+func getArtistsForUser(user string, count int) []Artist {
 	type Response struct {
 		Artists struct {
 			Artist_info []Artist `json:"artist"`
@@ -72,29 +77,24 @@ func getArtistsForUser(user string) []Artist {
 	}
 
 	library := Response{}
-	url := endpoint + "library.getartists&api_key=" +
-			apiKey + "&user=" + user + "&format=json"
-    error := getJson(url, &library)
-	if error != nil {
-		fmt.Println(error)
-	}
+	getLastFMJson("library.getartists", "user", user, count, &library)
 	return library.Artists.Artist_info
 }
 
 // Simple main for testing
 func main() {
-	artists := getArtistsForUser("devrevan")
+	artists := getArtistsForUser("devrevan", 20)
 	fmt.Println("\nARTISTS:\n\n", artists, "\n")
 
 	if len(artists) > 1 {
 		artist := artists[0]
-		similar := getSimilarArtistsByName(artist.Name)
+		similar := getSimilarArtistsByName(artist.Name, 5)
 		fmt.Println("\nSIMILAR TO", artist.Name, ":\n", similar)
 
 		artist = artists[1]
-		similar = getSimilarArtistsByID(artist.Mbid)
-		fmt.Println("\nSIMILAR TO", artist.Name, " (by mbid):\n", similar)	
+		similar = getSimilarArtistsByID(artist.Mbid, 7)
+		fmt.Println("\nSIMILAR TO", artist.Name, " (by mbid):\n", similar)
 	} else {
-		fmt.Println("No artists to find similarities with")	
+		fmt.Println("No artists to find similarities with")
 	}
 }
