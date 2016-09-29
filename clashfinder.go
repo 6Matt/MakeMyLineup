@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"encoding/json"
+	"os"
 )
 
 // Helpers
@@ -18,8 +19,22 @@ func getJson(url string, target interface{}) error {
     	return err
 	}
 	defer r.Body.Close()
-	// fmt.Println("response:", r)
 	return json.NewDecoder(r.Body).Decode(target)
+}
+
+func writeJsonFile(source interface{}, path string) error {
+	b, err := json.Marshal(source)
+	if err != nil {
+    	return err
+	}
+	f, err := os.Create(path)
+	if err != nil {
+    	return err
+	}
+	defer f.Close()
+
+	_, e := f.Write(b)
+	return e
 }
 
 type CustomTime struct {
@@ -49,6 +64,15 @@ type Event struct {
 type Location struct {
 	Name 	string
 	Events 	[]Event
+}
+
+func getFestivalNames(festivals []Festival, onlyCore bool) []string {
+	names := make([]string, 1)
+	for _, f := range festivals {
+		if (onlyCore && !f.IsCore) { continue }
+		names = append(names, f.Name)
+	}
+	return names
 }
 
 // Get all Festivals
@@ -89,8 +113,8 @@ func getSchedule(id string) []Location {
 
 // Simple main for testing
 func main() {
-	festivals := getFestivals()
-	fmt.Println("\nFESTIVALS:\n\n", festivals, "\n")
-	sched := getSchedule("osheaga2016official")
-	fmt.Println("\nSCHEDULE:\n\n", sched, "\n")
+	writeJsonFile(getFestivalNames(getFestivals(), true), "festivalNames.json")
+	//fmt.Println("\nFESTIVALS:\n\n", festivals, "\n")
+	//sched := getSchedule("osheaga2016official")
+	//fmt.Println("\nSCHEDULE:\n\n", sched, "\n")
 }

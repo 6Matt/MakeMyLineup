@@ -1,10 +1,28 @@
 {{define "content"}}
+
+<div class="jumbotron">
 <div class="container">
-  <div class="row">
-    <div class="jumbotron">
-      <h1>Hello, World!</h1>
-      <p>Welcome to your new Go web project.</p>
-    </div>
-  </div>
+	<div class="row">
+		<h1>Let's plan your festival!</h1>		
+
+		<div id="prefetch">
+		  <input class="typeahead" type="text" placeholder="Find your festival">
+		</div>
+
+		<script type="text/javascript">
+	      	var festivals = new Bloodhound({
+			  datumTokenizer: Bloodhound.tokenizers.whitespace,
+			  queryTokenizer: Bloodhound.tokenizers.whitespace,
+			  prefetch: '/data/festivalNames.json'
+			});
+
+			$('#prefetch .typeahead').typeahead(null, {
+			  name: 'festivals',
+			  source: festivals
+			});
+		</script>
+	</div>
 </div>
+</div>
+
 {{end}}
