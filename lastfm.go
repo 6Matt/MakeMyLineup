@@ -82,6 +82,7 @@ func getArtistsForUser(user string, count int) []Artist {
 }
 
 // Simple main for testing
+/*
 func main() {
 	artists := getArtistsForUser("devrevan", 20)
 	fmt.Println("\nARTISTS:\n\n", artists, "\n")
@@ -98,3 +99,4 @@ func main() {
 		fmt.Println("No artists to find similarities with")
 	}
 }
+*/
