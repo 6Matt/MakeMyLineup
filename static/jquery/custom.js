@@ -21,10 +21,11 @@ $('#festivalInput').bind('typeahead:autocomplete', function(ev, suggestion) {
 
 $('#makeSchedule').click(function(){
 	if(typeof selectedFestival != "undefined" && $('#festivalInput').val() == selectedFestival.desc) {
-		alert(selectedFestival.name); //TODO - change this to call the schedule maker
+		var lastfmUser = $('#lastfmUser').val();
+		window.location.href = "/sched/" + lastfmUser + "/" + selectedFestival.name;
 	}
 	else {
-		alert("Select a festival");
+		alert("Please select a festival");
 	}
 });
 
