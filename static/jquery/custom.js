@@ -11,8 +11,22 @@ $('#festivalInput').typeahead(null, {
   source: festivals
 });
 
+var selectedFestival;
+$('#festivalInput').bind('typeahead:select', function(ev, suggestion) {
+	selectedFestival = suggestion;
+});
+$('#festivalInput').bind('typeahead:autocomplete', function(ev, suggestion) {
+	selectedFestival = suggestion;
+});
+
 $('#festivalInput').keyup(function(event){
 	if(event.keyCode == 13) {
-		alert($('#festivalInput').val()); //TODO - change this to call the schedule maker
+		if(typeof selectedFestival != "undefined" && $('#festivalInput').val() == selectedFestival.desc) {
+			alert(selectedFestival.name); //TODO - change this to call the schedule maker
+		}
+		else {
+			alert("Select a festival");
+		}
 	}
 });
+
