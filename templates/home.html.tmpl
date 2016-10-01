@@ -5,11 +5,14 @@
 	<div class="row">
 		<h1>Let's plan your festival!</h1>		
 
-		<div>
-		  	<input id="lastfmUser" type="text" placeholder="Last.fm username">
-		</div>
-		<div id="prefetch">
-		  	<input id="festivalInput" class="typeahead" type="text" placeholder="What's it called?">
+		<div id="mainRow">
+			<input id="lastfmUser" type="text" class="form-control" placeholder="Last.fm username">
+			<div id="festivalDiv">
+				<input id="festivalInput" class="typeahead form-control" type="text" placeholder="What's the festival name?">	
+			</div>
+			<button id="makeSchedule" class="btn btn-primary">
+					Make my schedule!
+			</button>
 		</div>
 
 		<script type="text/javascript" src="jquery/custom.js"></script>
