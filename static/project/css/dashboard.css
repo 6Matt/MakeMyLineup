@@ -9,6 +9,10 @@ body {
   margin-bottom: 0px;
 }
 
+#schedContain {
+  margin-top: 60px;
+}
+
 .img {
     position: relative;
     height: 80vh;
