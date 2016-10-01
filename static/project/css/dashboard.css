@@ -1,5 +1,23 @@
-.modal-dialog {
-    z-index: 1100;
+body {
+  height: 100vh;
+  overflow-y: hidden;
+}
+
+.jumbotron {
+  padding-top: 20px;
+  margin-top: 60px;
+  margin-bottom: 0px;
+}
+
+.img {
+    position: relative;
+    height: 80vh;
+    overflow: hidden;
+}
+.img img {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
 }
 
 .typeahead,
@@ -15,19 +33,15 @@
   border-radius: 3px;
   outline: none;
 }
-
 .typeahead {
   background-color: #fff;
 }
-
 .typeahead:focus {
   border: 2px solid #2c3e50;
 }
-
 .tt-hint {
   color: #999
 }
-
 .tt-menu {
   width: 150%;
   margin: 12px 0;
@@ -40,26 +54,26 @@
      -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
           box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
-
 .tt-suggestion {
   padding: 3px 20px;
   font-size: 18px;
   line-height: 24px;
 }
-
 .tt-suggestion:hover {
   cursor: pointer;
   color: #fff;
   background-color: #0097cf;
 }
-
 .tt-suggestion.tt-cursor {
   color: #fff;
   background-color: #0097cf;
 
 }
-
 .tt-suggestion p {
   margin: 0;
+}
+
+.modal-dialog {
+    z-index: 1100;
 }
 
