@@ -20,11 +20,9 @@ body {
     bottom: 0;
 }
 
-.typeahead,
-.tt-query,
-.tt-hint {
+input {
   display: block;
-  width: 100%;
+  float: left;
   height: 60px;
   padding: 8px 12px;
   font-size: 24px;
@@ -32,13 +30,16 @@ body {
   border: 2px solid #e6e6e6;
   border-radius: 3px;
   outline: none;
+  background-color: #fff;
 }
+input:focus {
+  border: 2px solid #2c3e50;
+}
+
 .typeahead {
   background-color: #fff;
 }
-.typeahead:focus {
-  border: 2px solid #2c3e50;
-}
+
 .tt-hint {
   color: #999
 }
