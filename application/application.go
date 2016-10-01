@@ -41,7 +41,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
 
 	router.Handle("/", http.HandlerFunc(handlers.GetHome)).Methods("GET")
-	router.Handle("/sched", http.HandlerFunc(handlers.GetSched)).Methods("GET")
+	router.Handle("/sched/{lastID}/{festID}", http.HandlerFunc(handlers.GetSched)).Methods("GET")
 
 	// Path of static files must be last!
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
