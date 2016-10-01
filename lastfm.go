@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // Helpers
 func getJson(url string, target interface{}) error {
+	url = strings.Replace(url, " ", "%20", -1)
 	// fmt.Println("getting json from:", url)
 	r, err := http.Get(url)
 	if err != nil {
@@ -30,7 +32,7 @@ func getLastFMJson(query string, properties map[string]string, limit int, target
 	url = url + "&limit=" + strconv.Itoa(limit) + "&format=json"
 	error := getJson(url, &target)
 	if error != nil {
-		fmt.Println(error)
+		fmt.Printf("getLastFMJson(%s)\nerror: %#v\n", url, error)
 	}
 }
 
