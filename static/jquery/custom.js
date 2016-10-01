@@ -1,12 +1,13 @@
 
 var festivals = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.whitespace,
+  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('desc'),
   queryTokenizer: Bloodhound.tokenizers.whitespace,
-  prefetch: '/data/festivalNames.json'
+  prefetch: '/data/festivals.json'
 });
 
 $('#festivalInput').typeahead(null, {
   name: 'festivals',
+  display: 'desc',
   source: festivals
 });
 

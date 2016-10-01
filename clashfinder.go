@@ -6,6 +6,8 @@ import (
 	"time"
 	"encoding/json"
 	"os"
+	"strings"
+	"strconv"
 )
 
 // Helpers
@@ -21,7 +23,6 @@ func getJson(url string, target interface{}) error {
 	defer r.Body.Close()
 	return json.NewDecoder(r.Body).Decode(target)
 }
-
 func writeJsonFile(source interface{}, path string) error {
 	b, err := json.Marshal(source)
 	if err != nil {
@@ -37,28 +38,35 @@ func writeJsonFile(source interface{}, path string) error {
 	return e
 }
 
-type CustomTime struct {
-    time.Time
-}
-
-func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
+type ETime struct { time.Time }
+func (ct *ETime) UnmarshalJSON(b []byte) (err error) {
     if b[0] == '"' && b[len(b)-1] == '"' {
         b = b[1 : len(b)-1]
     }
     ct.Time, err = time.Parse(ctLayout, string(b))
-    return
+    return err
+}
+type DTime struct { time.Time }
+func (ct *DTime) UnmarshalJSON(b []byte) (err error) {
+    if b[0] == '"' && b[len(b)-1] == '"' {
+        b = b[1 : len(b)-1]
+    }
+    unixTime, err := strconv.ParseInt(string(b), 10, 64)
+    ct.Time = (time.Unix(unixTime, 0)).In(time.UTC)
+    return err
 }
 
 type Festival struct {
-    Id 		string	`json:"name"`
-    Name 	string	`json:"desc"`
-    IsCore	bool	`json:"coreClashfinder"`
+    Id 			string	`json:"name"`
+    Name 		string	`json:"desc"`
+    StartDate	DTime	`json:"startDate"`
+    IsCore		bool	`json:"coreClashfinder"`
 }
 
 type Event struct {
 	Name 	string
-	Start 	time.Time
-	End 	time.Time
+	Start 	ETime
+	End 	ETime
 }
 
 type Location struct {
@@ -66,6 +74,7 @@ type Location struct {
 	Events 	[]Event
 }
 
+// Get list of festival names
 func getFestivalNames(festivals []Festival, onlyCore bool) []string {
 	names := make([]string, 1)
 	for _, f := range festivals {
@@ -73,6 +82,29 @@ func getFestivalNames(festivals []Festival, onlyCore bool) []string {
 		names = append(names, f.Name)
 	}
 	return names
+}
+
+// Get recent festivals, make names unique, and prioritize core clashfinders
+func filterFestivals(unfiltered []Festival) []Festival {
+	nameToFestival := map[string]Festival{}
+	for _, f := range unfiltered {
+		// Discard festivals from more than 3 years ago
+		if (f.StartDate.Before(time.Now().AddDate(-3, 0, 0))) { continue; }
+
+		lcName := strings.ToLower(f.Name)
+		if fInMap, isInMap := nameToFestival[lcName]; isInMap {
+			if (!fInMap.IsCore && f.IsCore) {
+				nameToFestival[lcName] = f;
+			}
+		} else {
+			nameToFestival[lcName] = f;
+		}
+	}
+	filtered := make([]Festival, 0, len(nameToFestival))
+	for _, v := range nameToFestival {
+    	filtered = append(filtered, v)
+    }
+	return filtered
 }
 
 // Get all Festivals
@@ -92,12 +124,6 @@ func getFestivals() []Festival {
 
 // Get an Event schedule
 func getSchedule(id string) []Location {
-	type EventCustTime struct {
-		Name 	string
-		Start 	CustomTime
-		End 	CustomTime
-	}
-
 	type Response struct {
 		Locations []Location
 	}
@@ -113,7 +139,8 @@ func getSchedule(id string) []Location {
 
 // Simple main for testing
 func main() {
-	writeJsonFile(getFestivalNames(getFestivals(), true), "festivalNames.json")
+	writeJsonFile(filterFestivals(getFestivals()), "festivals.json")
+	//festivals := getFestivals()
 	//fmt.Println("\nFESTIVALS:\n\n", festivals, "\n")
 	//sched := getSchedule("osheaga2016official")
 	//fmt.Println("\nSCHEDULE:\n\n", sched, "\n")
