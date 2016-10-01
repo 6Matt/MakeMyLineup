@@ -6,21 +6,10 @@
 		<h1>Let's plan your festival!</h1>		
 
 		<div id="prefetch">
-		  <input class="typeahead" type="text" placeholder="What's it called?">
+		  <input id="festivalInput" class="typeahead" type="text" placeholder="What's it called?">
 		</div>
 
-		<script type="text/javascript">
-	      	var festivals = new Bloodhound({
-			  datumTokenizer: Bloodhound.tokenizers.whitespace,
-			  queryTokenizer: Bloodhound.tokenizers.whitespace,
-			  prefetch: '/data/festivalNames.json'
-			});
-
-			$('#prefetch .typeahead').typeahead(null, {
-			  name: 'festivals',
-			  source: festivals
-			});
-		</script>
+		<script type="text/javascript" src="jquery/custom.js"></script>
 	</div>
 </div>
 </div>
