@@ -9,7 +9,7 @@ import (
 
 // Helpers
 func getJson(url string, target interface{}) error {
-	fmt.Println("getting json from:", url)
+	// fmt.Println("getting json from:", url)
 	r, err := http.Get(url)
 	if err != nil {
 		return err
@@ -22,9 +22,12 @@ func getJson(url string, target interface{}) error {
 const apiKey = "7c5cb1bf8a097b3491633081c1e62ff8"
 const endpoint = "http://ws.audioscrobbler.com/2.0/?method="
 
-func getLastFMJson(query, propertyName, propertyValue string, limit int, target interface{}) {
-	url := endpoint + query + "&api_key=" + apiKey + "&" + propertyName +
-		"=" + propertyValue + "&limit=" + strconv.Itoa(limit) + "&format=json"
+func getLastFMJson(query string, properties map[string]string, limit int, target interface{}) {
+	url := endpoint + query + "&api_key=" + apiKey
+	for key, val := range properties {
+		url = url + "&" + key + "=" + val
+	}
+	url = url + "&limit=" + strconv.Itoa(limit) + "&format=json"
 	error := getJson(url, &target)
 	if error != nil {
 		fmt.Println(error)
@@ -56,7 +59,7 @@ func getSimilarArtists(propertyName, propertyValue string, count int) []Artist {
 	}
 
 	similarArtists := Response{}
-	getLastFMJson("artist.getsimilar", propertyName, propertyValue, count, &similarArtists)
+	getLastFMJson("artist.getsimilar", map[string]string{propertyName: propertyValue}, count, &similarArtists)
 	return similarArtists.Similarartists.Artist_info
 }
 
@@ -68,6 +71,17 @@ func getSimilarArtistsByID(mbid string, count int) []Artist {
 	return getSimilarArtists("mbid", mbid, count)
 }
 
+// Artist fetching
+func getAritstByName(name string) Artist {
+	type Response struct {
+		Artist_info Artist `json:"artist"`
+	}
+
+	artist := Response{}
+	getLastFMJson("artist.getInfo", map[string]string{"artist": name}, 1, &artist)
+	return artist.Artist_info
+}
+
 // Get Artists from user's Library
 func getArtistsForUser(user string, count int) []Artist {
 	type Response struct {
@@ -77,7 +91,7 @@ func getArtistsForUser(user string, count int) []Artist {
 	}
 
 	library := Response{}
-	getLastFMJson("library.getartists", "user", user, count, &library)
+	getLastFMJson("library.getartists", map[string]string{"user": user}, count, &library)
 	return library.Artists.Artist_info
 }
 
