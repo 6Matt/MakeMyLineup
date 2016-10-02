@@ -11,7 +11,7 @@ import (
 // Helpers
 func getJson(url string, target interface{}) error {
 	url = strings.Replace(url, " ", "%20", -1)
-	 fmt.Println("getting json from:", url)
+	// fmt.Println("getting json from:", url)
 	r, err := http.Get(url)
 	if err != nil {
 		return err

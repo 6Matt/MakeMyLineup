@@ -3,6 +3,7 @@ package scheduler
 import (
 	//"fmt"
 	"math"
+	"sync"
 )
 
 type Rank struct {
@@ -22,11 +23,15 @@ func rankForNeighbourOf(r Rank) Rank {
 	return Rank{r.Val, r.Tier + 1}
 }
 
-func getSimilarArtsitsWithCache(artist Artist, limit int, similarArtistCache map[Artist]([]Artist)) []Artist {
+func getSimilarArtsitsWithCache(artist Artist, limit int, similarArtistCache map[Artist]([]Artist), similarArtistsLock sync.Mutex) []Artist {
+	similarArtistsLock.Lock()
 	simliarArtists := similarArtistCache[artist]
+	similarArtistsLock.Unlock()
 	if len(simliarArtists) == 0 {
 		simliarArtists = getSimilarArtistsByName(artist.Name, limit)
+		similarArtistsLock.Lock()
 		similarArtistCache[artist] = simliarArtists
+		similarArtistsLock.Unlock()
 	}
 	return simliarArtists
 }
@@ -44,13 +49,14 @@ func appendArtists(queue []QueuedArtist, artists []Artist, parent QueuedArtist) 
 	return queue
 }
 
-func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, similarArtistCache map[Artist]([]Artist)) {
+func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, rankCacheLock sync.Mutex, similarArtistCache map[Artist]([]Artist), similarArtistsLock sync.Mutex) {
+	// fmt.Println("computeRankForArtist", artist)
 	if _, ok := rankCache[artist]; ok {
 		return
 	}
 
 	rootArtist := QueuedArtist{artist, 0, nil}
-	simliarArtists := getSimilarArtsitsWithCache(artist, adjCount[0], similarArtistCache)
+	simliarArtists := getSimilarArtsitsWithCache(artist, adjCount[0], similarArtistCache, similarArtistsLock)
 	queue := appendArtists([]QueuedArtist{}, simliarArtists, rootArtist)
 
 	foundDepth := len(adjCount) + 1
@@ -63,24 +69,30 @@ func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, similarArtis
 			break
 		}
 
-		if val, ok := rankCache[queuedArtist.Artist]; ok {
+		rankCacheLock.Lock()
+		val, ok := rankCache[queuedArtist.Artist]
+		rankCacheLock.Unlock()
+		if ok {
 			// fmt.Println("\nevaluating artist", queuedArtist, "found similar artist", queuedArtist)
 			foundDepth = queuedArtist.Depth
 			childRank := val
 			parent := queuedArtist.Parent
 			for parent != nil {
+				rankCacheLock.Lock()
 				currentRank := rankCache[(*parent).Artist]
 				if newRank := rankForNeighbourOf(childRank); rankValue(newRank) > rankValue(currentRank) {
 					rankCache[(*parent).Artist] = newRank
+					rankCacheLock.Unlock()
 					childRank = newRank
 					parent = (*parent).Parent
 				} else {
+					rankCacheLock.Unlock()
 					break
 				}
 			}
 		} else if queuedArtist.Depth < len(adjCount) {
 			// fmt.Println("\nevaluating artist", queuedArtist, "artist not similar", queuedArtist)
-			simliarArtists = getSimilarArtsitsWithCache(queuedArtist.Artist, adjCount[queuedArtist.Depth], similarArtistCache)
+			simliarArtists = getSimilarArtsitsWithCache(queuedArtist.Artist, adjCount[queuedArtist.Depth], similarArtistCache, similarArtistsLock)
 			queue = appendArtists(queue, simliarArtists, queuedArtist)
 		}
 	}
@@ -93,19 +105,33 @@ func RankArtists(username string, artists []Artist) map[Artist]int64 {
 
 	// assign ranks to artists in user's library
 	var cache = map[Artist]Rank{}
+	cacheLock := sync.Mutex{}
 	for i := len(library) - 1; i >= 0; i-- {
 		cache[library[i]] = Rank{float64(len(library) - i), 0}
 	}
 
 	// rank given from artists
+	var wg sync.WaitGroup
 	var rankedArtists = map[Artist]int64{}
+	rankedArtistsLock := sync.Mutex{}
 	var similarArtistCache = map[Artist]([]Artist){}
+	similarArtistCacheLock := sync.Mutex{}
 	for _, artist := range artists {
-		computeRankForArtist(artist, cache, similarArtistCache)
-		rank := cache[artist]
-		rankedArtists[artist] = rankValue(rank)
+		wg.Add(1)
+		// fmt.Println("looping for", artist)
+		_artist := artist
+		go func() {
+			defer wg.Done()
+			// fmt.Println("calling computeRankForArtist for", _artist)
+			computeRankForArtist(_artist, cache, cacheLock, similarArtistCache, similarArtistCacheLock)
+			rankedArtistsLock.Lock()
+			rank := cache[_artist]
+			rankedArtists[_artist] = rankValue(rank)
+			rankedArtistsLock.Unlock()
+		}()
 	}
 
+	wg.Wait()
 	return rankedArtists
 }
 
