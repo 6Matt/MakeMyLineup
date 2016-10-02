@@ -32,12 +32,19 @@ func (a ByFinishTime) Len() int 				{ return len(a) }
 func (a ByFinishTime) Swap(i, j int) 			{ a[i], a[j] = a[j], a[i] }
 func (a ByFinishTime) Less(i,j int) bool 		{ return a[i].End.Time.Before(a[j].End.Time) }
 
+//ByStartTime implements sort.Interface for []SchedEvent based on Start time of the event
+type ByStartTime []SchedEvent
+
+func (a ByStartTime) Len() int 					{ return len(a) }
+func (a ByStartTime) Swap(i, j int) 			{ a[i], a[j] = a[j], a[i] }
+func (a ByStartTime) Less(i,j int) bool 		{ return a[i].Start.Time.Before(a[j].Start.Time) }
+
 func max(a, b int64) int64 {
 	if a < b {
 		return b
 	} 
 	return a
-} 
+}
 
 func weightedIntreval(schedByLoc []SchedEvent, rankings map[string]int64) []SchedEvent {
 
@@ -85,7 +92,8 @@ func weightedIntreval(schedByLoc []SchedEvent, rankings map[string]int64) []Sche
 		}
 	}
 
-//5 - return scheduled items
+//5 - sort by start time and return scheduled items
+	sort.Sort(ByStartTime(schedByLoc))
 
 	return schedByLoc;
 }
