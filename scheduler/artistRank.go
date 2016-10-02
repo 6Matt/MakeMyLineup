@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"fmt"
+	//"fmt"
 	"math"
 )
 
@@ -109,6 +109,7 @@ func rankArtists(username string, artists []Artist) map[Artist]int64 {
 	return rankedArtists
 }
 
+/*
 // Simple main for testing
 func main() {
 	a := []Artist{}
@@ -122,3 +123,4 @@ func main() {
 		fmt.Println(key.Name, val)
 	}
 }
+*/

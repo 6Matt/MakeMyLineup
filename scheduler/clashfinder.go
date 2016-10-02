@@ -1,28 +1,21 @@
 package scheduler
 
 import (
-	"net/http"
 	"fmt"
 	"time"
 	"encoding/json"
 	"os"
 	"strings"
 	"strconv"
+	"sort"
 )
 
 // Helpers
-const endpoint = "http://clashfinder.com/data/"
+const cfEndPoint = "http://clashfinder.com/data/"
 const ctLayout = "2006-01-02 15:04"
+const dayLayout = "2006-01-02"
+const friendlyLayout = "Monday, January 2"
 
-func getJson(url string, target interface{}) error {
-	fmt.Println("getting json from:", url)
-	r, err := http.Get(url)
-	if err != nil {
-    	return err
-	}
-	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(target)
-}
 func writeJsonFile(source interface{}, path string) error {
 	b, err := json.Marshal(source)
 	if err != nil {
@@ -68,11 +61,29 @@ type Event struct {
 	Start 	ETime
 	End 	ETime
 }
+type ByStart []Event
+func (a ByStart) Len() int           { return len(a) }
+func (a ByStart) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByStart) Less(i, j int) bool { return a[i].Start.Time.Before(a[j].Start.Time) }
 
 type Location struct {
 	Name 	string
 	Events 	[]Event
 }
+type ByName []Location
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
+type Day struct {
+	Encoded 	string
+	Date 		string
+	Locations 	[]Location
+}
+type ByEncoded []Day
+func (a ByEncoded) Len() int           { return len(a) }
+func (a ByEncoded) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByEncoded) Less(i, j int) bool { return a[i].Encoded < a[j].Encoded }
 
 // Get list of festival names
 func getFestivalNames(festivals []Festival, onlyCore bool) []string {
@@ -110,7 +121,7 @@ func filterFestivals(unfiltered []Festival) []Festival {
 // Get all Festivals
 func getFestivals() []Festival {
 	m := map[string]Festival{}
-	url := endpoint + "events/all.json"
+	url := cfEndPoint + "events/all.json"
     error := getJson(url, &m)
 	if error != nil {
 		fmt.Println(error)
@@ -123,13 +134,13 @@ func getFestivals() []Festival {
 }
 
 // Get an Event schedule
-func getSchedule(id string) []Location {
+func scheduleByLocation(id string) []Location {
 	type Response struct {
 		Locations []Location
 	}
 
 	schedule := Response{}
-	url := endpoint + "event/" + id + ".json"
+	url := cfEndPoint + "event/" + id + ".json"
     error := getJson(url, &schedule)
 	if error != nil {
 		fmt.Println(error)
@@ -137,6 +148,49 @@ func getSchedule(id string) []Location {
 	return schedule.Locations
 }
 
+func (e *Event) getDay() string {
+	return e.Start.Format(dayLayout)
+}
+func makeFriendly(enc string) string {
+	time, _ := time.Parse(dayLayout, string(enc))
+	return time.Format(friendlyLayout)
+}
+
+// Sort schedule by day, locations by name, and events by time
+func ScheduleByDay(id string) []Day {
+	sched := scheduleByLocation(id)
+	dayToLocToEvt := make(map[string]map[string][]Event)
+	for _, loc := range sched {
+    	for _, evt := range loc.Events {
+			if _, isInMap := dayToLocToEvt[evt.getDay()]; !isInMap {
+				dayToLocToEvt[evt.getDay()] = make(map[string][]Event)
+			}
+    		dayToLocToEvt[evt.getDay()][loc.Name] = append(dayToLocToEvt[evt.getDay()][loc.Name], evt)
+    	}
+    }
+
+    days := make([]Day, 0, len(dayToLocToEvt))
+	for d, lToE := range dayToLocToEvt {
+		locations := make([]Location, 0, len(lToE))
+    	for l, e := range lToE {
+    		locations = append(locations, Location{l, e})
+    	}
+    	days = append(days, Day{d, makeFriendly(d), locations})
+    }
+
+    sort.Sort(ByEncoded(days))
+    for _, d := range days {
+    	sort.Sort(ByName(d.Locations))
+    	for _, l := range d.Locations {
+    		sort.Sort(ByStart(l.Events))
+    	}
+    }
+
+    return days
+}
+
+
+/*
 // Simple main for testing
 func main() {
 	writeJsonFile(filterFestivals(getFestivals()), "festivals.json")
@@ -145,3 +199,4 @@ func main() {
 	//sched := getSchedule("osheaga2016official")
 	//fmt.Println("\nSCHEDULE:\n\n", sched, "\n")
 }
+*/

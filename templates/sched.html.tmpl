@@ -3,11 +3,18 @@
 <div class="container" id="schedContain">
 	<div class="row">
 		<h1>Here's your schedule!</h1>
-		<h1>{{.One}}<h1>
-		<h1>{{.Two}}<h1>
+		{{range .}}
+			<h2>{{.Date}}</h2>
+			{{range .Locations}}
+				<h3>{{.Name}}</h3>
+				<ul>
+					{{range .Events}}
+						<li>{{.Start}} - {{.End}}: {{.Name}}</li>
+					{{end}}
+				</ul>
+			{{end}}
+		{{end}}
 	</div>
 </div>
-
-
 
 {{end}}
