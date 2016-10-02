@@ -8,6 +8,7 @@ import (
 	"strings"
 	"strconv"
 	"sort"
+    "html/template"
 )
 
 // Helpers
@@ -61,6 +62,19 @@ type Event struct {
 	Start 	ETime
 	End 	ETime
 }
+func (e Event) FormatEventName() template.HTML {
+
+	var formatted string = ""
+	for _, rune_value := range e.Name {
+		if rune_value < 128 {
+			formatted += string(rune_value);
+		} else {
+			formatted += "&#" + strconv.FormatInt(int64(rune_value), 10) + ";"
+		}
+	}
+
+    return template.HTML(formatted)
+}
 type ByStart []Event
 func (a ByStart) Len() int           { return len(a) }
 func (a ByStart) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -70,6 +84,20 @@ type Location struct {
 	Name 	string
 	Events 	[]Event
 }
+func (l Location) FormatLocationName() template.HTML {
+
+	var formatted string = ""
+	for _, rune_value := range l.Name {
+		if rune_value < 128 {
+			formatted += string(rune_value);
+		} else {
+			formatted += "&#" + strconv.FormatInt(int64(rune_value), 10) + ";"
+		}
+	}
+
+    return template.HTML(formatted)
+}
+
 type ByName []Location
 func (a ByName) Len() int           { return len(a) }
 func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

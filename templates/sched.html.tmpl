@@ -6,10 +6,10 @@
 		{{range .}}
 			<h2>{{.Date}}</h2>
 			{{range .Locations}}
-				<h3>{{.Name}}</h3>
+				<h3>{{.FormatLocationName}}</h3>
 				<ul>
 					{{range .Events}}
-						<li>{{.Start}} - {{.End}}: {{.Name}}</li>
+						<li>{{.Start}} - {{.End}}: {{.FormatEventName}}</li>
 					{{end}}
 				</ul>
 			{{end}}
