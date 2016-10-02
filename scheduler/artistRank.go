@@ -51,7 +51,10 @@ func appendArtists(queue []QueuedArtist, artists []Artist, parent QueuedArtist) 
 
 func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, rankCacheLock sync.Mutex, similarArtistCache map[Artist]([]Artist), similarArtistsLock sync.Mutex) {
 	// fmt.Println("computeRankForArtist", artist)
-	if _, ok := rankCache[artist]; ok {
+	rankCacheLock.Lock()
+	_, ok := rankCache[artist]
+	rankCacheLock.Unlock()
+	if ok {
 		return
 	}
 
@@ -124,8 +127,10 @@ func RankArtists(username string, artists []Artist) map[Artist]int64 {
 			defer wg.Done()
 			// fmt.Println("calling computeRankForArtist for", _artist)
 			computeRankForArtist(_artist, cache, cacheLock, similarArtistCache, similarArtistCacheLock)
-			rankedArtistsLock.Lock()
+			cacheLock.Lock()
 			rank := cache[_artist]
+			cacheLock.Unlock()
+			rankedArtistsLock.Lock()
 			rankedArtists[_artist] = rankValue(rank)
 			rankedArtistsLock.Unlock()
 		}()
