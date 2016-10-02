@@ -5,14 +5,27 @@
 		<h1>Here's your schedule!</h1>
 		{{range .}}
 			<h2>{{.Date}}</h2>
-			{{range .Locations}}
-				<h3>{{.FormatLocationName}}</h3>
-				<ul>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Start</th>
+						<th>End</th>
+						<th>Artist</th>
+						<th>Location</th>
+					</tr>
+				</thead>
+				<tbody>
 					{{range .Events}}
-						<li>{{.Start}} - {{.End}}: {{.FormatEventName}}</li>
+					<tr>
+					{{if .Scheduled}} <tr class="success"> {{else}} <tr> {{end}}
+						<td>{{.Start}}</td>
+						<td>{{.End}}</td>
+						<td>{{.FormatEventName}}</td>
+						<td>{{.FormatLocationName}}</td>
+					</tr>
 					{{end}}
-				</ul>
-			{{end}}
+				</tbody>
+			</table>
 		{{end}}
 	</div>
 </div>

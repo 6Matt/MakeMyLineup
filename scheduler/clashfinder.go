@@ -63,7 +63,6 @@ type Event struct {
 	End 	ETime
 }
 func (e Event) FormatEventName() template.HTML {
-
 	var formatted string = ""
 	for _, rune_value := range e.Name {
 		if rune_value < 128 {
@@ -86,6 +85,12 @@ type SchedEvent struct {
 	Scheduled 	bool
 	Start 		ETime
 	End 		ETime
+}
+func (e SchedEvent) FormatEventTime() template.HTML {
+	var formatted string = ""
+	
+
+    return template.HTML(formatted)
 }
 
 type Location struct {
@@ -119,6 +124,16 @@ type ByEncoded []Day
 func (a ByEncoded) Len() int           { return len(a) }
 func (a ByEncoded) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByEncoded) Less(i, j int) bool { return a[i].Encoded < a[j].Encoded }
+
+type SchedDay struct {
+	Encoded 	string
+	Date 		string
+	Events 	 	[]SchedEvent
+}
+type BySchedEncoded []SchedDay
+func (a BySchedEncoded) Len() int           { return len(a) }
+func (a BySchedEncoded) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a BySchedEncoded) Less(i, j int) bool { return a[i].Encoded < a[j].Encoded }
 
 // Get list of festival names
 func getFestivalNames(festivals []Festival, onlyCore bool) []string {
