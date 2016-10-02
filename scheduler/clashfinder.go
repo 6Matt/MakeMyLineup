@@ -16,6 +16,7 @@ const cfEndPoint = "http://clashfinder.com/data/"
 const ctLayout = "2006-01-02 15:04"
 const dayLayout = "2006-01-02"
 const friendlyLayout = "Monday, January 2"
+const timeLayout = "15:04"
 
 func writeJsonFile(source interface{}, path string) error {
 	b, err := json.Marshal(source)
@@ -62,18 +63,6 @@ type Event struct {
 	Start 	ETime
 	End 	ETime
 }
-func (e Event) FormatEventName() template.HTML {
-	var formatted string = ""
-	for _, rune_value := range e.Name {
-		if rune_value < 128 {
-			formatted += string(rune_value);
-		} else {
-			formatted += "&#" + strconv.FormatInt(int64(rune_value), 10) + ";"
-		}
-	}
-
-    return template.HTML(formatted)
-}
 type ByStart []Event
 func (a ByStart) Len() int           { return len(a) }
 func (a ByStart) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -86,29 +75,38 @@ type SchedEvent struct {
 	Start 		ETime
 	End 		ETime
 }
-func (e SchedEvent) FormatEventTime() template.HTML {
+func (e SchedEvent) FormatEventName() template.HTML {
 	var formatted string = ""
-	
-
-    return template.HTML(formatted)
-}
-
-type Location struct {
-	Name 	string
-	Events 	[]Event
-}
-func (l Location) FormatLocationName() template.HTML {
-
-	var formatted string = ""
-	for _, rune_value := range l.Name {
+	for _, rune_value := range e.Name {
 		if rune_value < 128 {
 			formatted += string(rune_value);
 		} else {
 			formatted += "&#" + strconv.FormatInt(int64(rune_value), 10) + ";"
 		}
 	}
-
     return template.HTML(formatted)
+}
+func (e SchedEvent) FormatLocationName() template.HTML {
+	var formatted string = ""
+	for _, rune_value := range e.Location {
+		if rune_value < 128 {
+			formatted += string(rune_value);
+		} else {
+			formatted += "&#" + strconv.FormatInt(int64(rune_value), 10) + ";"
+		}
+	}
+    return template.HTML(formatted)
+}
+func (e SchedEvent) FormatStartTime() template.HTML {
+    return template.HTML(e.Start.Format(timeLayout))
+}
+func (e SchedEvent) FormatEndTime() template.HTML {
+    return template.HTML(e.End.Format(timeLayout))
+}
+
+type Location struct {
+	Name 	string
+	Events 	[]Event
 }
 type ByName []Location
 func (a ByName) Len() int           { return len(a) }
@@ -238,7 +236,7 @@ func ScheduleByDay(sched []Location) []Day {
     return days
 }
 
-
+// Get list of artists at festival
 func ArtistList(byLocation []Location) []Artist {
 	names := make(map[string]bool)
 	for _, loc := range byLocation {
@@ -255,6 +253,42 @@ func ArtistList(byLocation []Location) []Artist {
 	}
 	return artists
 }
+
+// schedule by Location -> list of schedulable events
+func ToSchedEvent(byLocation []Location) []SchedEvent {
+	events := make([]SchedEvent, 0, len(byLocation))
+	for _, loc := range byLocation {
+    	for _, evt := range loc.Events {
+    		events = append(events, SchedEvent{
+    			evt.Name,
+    			loc.Name,
+    			false,
+    			evt.Start,
+    			evt.End})
+    	}
+    }
+    return events
+}
+
+func EventsByDay(events []SchedEvent) []SchedDay {
+	days := make(map[string][]SchedEvent)
+	for _, e := range events {
+		enc := e.Start.Format(dayLayout)
+		if _, isInMap := days[enc]; !isInMap {
+			days[enc] = make([]SchedEvent, 0)
+		}
+		days[enc] = append(days[enc], e)
+	}
+
+	schedDays := make([]SchedDay, 0, len(days))
+	for key, val := range days {
+		schedDays = append(schedDays, SchedDay{key, makeFriendly(key), val})
+	}
+	sort.Sort(BySchedEncoded(schedDays))
+
+	return schedDays
+}
+
 
 
 /*

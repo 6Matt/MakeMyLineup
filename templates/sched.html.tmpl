@@ -18,8 +18,8 @@
 					{{range .Events}}
 					<tr>
 					{{if .Scheduled}} <tr class="success"> {{else}} <tr> {{end}}
-						<td>{{.Start}}</td>
-						<td>{{.End}}</td>
+						<td>{{.FormatStartTime}}</td>
+						<td>{{.FormatEndTime}}</td>
 						<td>{{.FormatEventName}}</td>
 						<td>{{.FormatLocationName}}</td>
 					</tr>

@@ -1,16 +1,25 @@
 package scheduler
 
 import (
-	"fmt"
+	//"fmt"
 )
 
-func GetAllEvents(lastFMID string, festivalID string) []SchedEvent {
-	schedByLoc := ScheduleByLocation(festivalID)
-	rankings := RankArtists(lastFMID, ArtistList(schedByLoc))
-	
+func RankingsByName(rankings map[Artist]int64) map[string]int64 {
+	nameToRank := make(map[string]int64)
 	for key, val := range rankings {
-		fmt.Println(key.Name, val)
+		nameToRank[key.Name] = val
 	}
+	return nameToRank
+}
 
-	return nil
+func ScheduledEventsByDay(lastFMID string, festivalID string) []SchedDay {
+	schedByLoc := ScheduleByLocation(festivalID)
+	//rankings := RankingsByName(RankArtists(lastFMID, ArtistList(schedByLoc)))
+	events := ToSchedEvent(schedByLoc)
+
+	/*
+	SCHEDULE events
+	*/
+
+	return EventsByDay(events)
 }
