@@ -24,12 +24,14 @@ func getJson(url string, target interface{}) error {
 const apiKey = "7c5cb1bf8a097b3491633081c1e62ff8"
 const endpoint = "http://ws.audioscrobbler.com/2.0/?method="
 
-func getLastFMJson(query string, properties map[string]string, limit int, target interface{}) {
+func getLastFMJson(query string, properties map[string]string, limit int, autocorrect bool, target interface{}) {
 	url := endpoint + query + "&api_key=" + apiKey
 	for key, val := range properties {
 		url = url + "&" + key + "=" + val
 	}
-	url = url + "&limit=" + strconv.Itoa(limit) + "&format=json"
+	url = url + "&limit=" + strconv.Itoa(limit)
+	if (autocorrect) { url = url + "&autocorrect=1" }
+	url = url + "&format=json"
 	error := getJson(url, &target)
 	if error != nil {
 		fmt.Printf("getLastFMJson(%s)\nerror: %#v\n", url, error)
@@ -61,7 +63,7 @@ func getSimilarArtists(propertyName, propertyValue string, count int) []Artist {
 	}
 
 	similarArtists := Response{}
-	getLastFMJson("artist.getsimilar", map[string]string{propertyName: propertyValue}, count, &similarArtists)
+	getLastFMJson("artist.getsimilar", map[string]string{propertyName: propertyValue}, count, true, &similarArtists)
 	return similarArtists.Similarartists.Artist_info
 }
 
@@ -80,7 +82,7 @@ func getAritstByName(name string) Artist {
 	}
 
 	artist := Response{}
-	getLastFMJson("artist.getInfo", map[string]string{"artist": name}, 1, &artist)
+	getLastFMJson("artist.getInfo", map[string]string{"artist": name}, 1, false, &artist)
 	return artist.Artist_info
 }
 
@@ -93,7 +95,7 @@ func getArtistsForUser(user string, count int) []Artist {
 	}
 
 	library := Response{}
-	getLastFMJson("library.getartists", map[string]string{"user": user}, count, &library)
+	getLastFMJson("library.getartists", map[string]string{"user": user}, count, false, &library)
 	return library.Artists.Artist_info
 }
 

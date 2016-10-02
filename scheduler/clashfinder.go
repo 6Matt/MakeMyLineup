@@ -80,6 +80,14 @@ func (a ByStart) Len() int           { return len(a) }
 func (a ByStart) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByStart) Less(i, j int) bool { return a[i].Start.Time.Before(a[j].Start.Time) }
 
+type SchedEvent struct {
+	Name 		string
+	Location 	string
+	Scheduled 	bool
+	Start 		ETime
+	End 		ETime
+}
+
 type Location struct {
 	Name 	string
 	Events 	[]Event
@@ -97,7 +105,6 @@ func (l Location) FormatLocationName() template.HTML {
 
     return template.HTML(formatted)
 }
-
 type ByName []Location
 func (a ByName) Len() int           { return len(a) }
 func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
