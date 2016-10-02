@@ -23,7 +23,7 @@ func rankForNeighbourOf(r Rank) Rank {
 	return Rank{r.Val, r.Tier + 1}
 }
 
-func getSimilarArtsitsWithCache(artist Artist, limit int, similarArtistCache map[Artist]([]Artist), similarArtistsLock sync.Mutex) []Artist {
+func getSimilarArtsitsWithCache(artist Artist, limit int, similarArtistCache map[Artist]([]Artist), similarArtistsLock *sync.Mutex) []Artist {
 	similarArtistsLock.Lock()
 	simliarArtists := similarArtistCache[artist]
 	similarArtistsLock.Unlock()
@@ -49,7 +49,7 @@ func appendArtists(queue []QueuedArtist, artists []Artist, parent QueuedArtist) 
 	return queue
 }
 
-func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, rankCacheLock sync.Mutex, similarArtistCache map[Artist]([]Artist), similarArtistsLock sync.Mutex) {
+func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, rankCacheLock *sync.Mutex, similarArtistCache map[Artist]([]Artist), similarArtistsLock *sync.Mutex) {
 	// fmt.Println("computeRankForArtist", artist)
 	rankCacheLock.Lock()
 	_, ok := rankCache[artist]
@@ -108,7 +108,7 @@ func RankArtists(username string, artists []Artist) map[Artist]int64 {
 
 	// assign ranks to artists in user's library
 	var cache = map[Artist]Rank{}
-	cacheLock := sync.Mutex{}
+	cacheLock := &sync.Mutex{}
 	for i := len(library) - 1; i >= 0; i-- {
 		cache[library[i]] = Rank{float64(len(library) - i), 0}
 	}
@@ -116,9 +116,9 @@ func RankArtists(username string, artists []Artist) map[Artist]int64 {
 	// rank given from artists
 	var wg sync.WaitGroup
 	var rankedArtists = map[Artist]int64{}
-	rankedArtistsLock := sync.Mutex{}
+	rankedArtistsLock := &sync.Mutex{}
 	var similarArtistCache = map[Artist]([]Artist){}
-	similarArtistCacheLock := sync.Mutex{}
+	similarArtistCacheLock := &sync.Mutex{}
 	for _, artist := range artists {
 		wg.Add(1)
 		// fmt.Println("looping for", artist)
