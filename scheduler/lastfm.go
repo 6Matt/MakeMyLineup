@@ -63,7 +63,7 @@ func getSimilarArtists(propertyName, propertyValue string, count int) []Artist {
 	}
 
 	similarArtists := Response{}
-	getLastFMJson("artist.getsimilar", map[string]string{propertyName: propertyValue}, count, true, &similarArtists)
+	getLastFMJson("artist.getsimilar", map[string]string{propertyName: propertyValue}, count, false, &similarArtists)
 	return similarArtists.Similarartists.Artist_info
 }
 
