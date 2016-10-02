@@ -11,7 +11,7 @@ import (
 // Helpers
 func getJson(url string, target interface{}) error {
 	url = strings.Replace(url, " ", "%20", -1)
-	// fmt.Println("getting json from:", url)
+	 fmt.Println("getting json from:", url)
 	r, err := http.Get(url)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func getAritstByName(name string) Artist {
 	}
 
 	artist := Response{}
-	getLastFMJson("artist.getInfo", map[string]string{"artist": name}, 1, false, &artist)
+	getLastFMJson("artist.getInfo", map[string]string{"artist": name}, 1, true, &artist)
 	return artist.Artist_info
 }
 

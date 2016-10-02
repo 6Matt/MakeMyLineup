@@ -9,7 +9,8 @@ import (
 )
 
 func GetSched(w http.ResponseWriter, r *http.Request) {
-    sched := scheduler.ScheduleByDay(mux.Vars(r)["festID"])
+    //sched := scheduler.ScheduleByDay(ScheduleByLocation(mux.Vars(r)["festID"]))
+    sched := scheduler.GetAllEvents(mux.Vars(r)["lastID"], mux.Vars(r)["festID"])
 
     w.Header().Set("Content-Type", "text/html")
     tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/sched.html.tmpl")

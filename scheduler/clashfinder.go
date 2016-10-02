@@ -169,7 +169,7 @@ func getFestivals() []Festival {
 }
 
 // Get an Event schedule
-func scheduleByLocation(id string) []Location {
+func ScheduleByLocation(id string) []Location {
 	type Response struct {
 		Locations []Location
 	}
@@ -192,8 +192,7 @@ func makeFriendly(enc string) string {
 }
 
 // Sort schedule by day, locations by name, and events by time
-func ScheduleByDay(id string) []Day {
-	sched := scheduleByLocation(id)
+func ScheduleByDay(sched []Location) []Day {
 	dayToLocToEvt := make(map[string]map[string][]Event)
 	for _, loc := range sched {
     	for _, evt := range loc.Events {
@@ -222,6 +221,24 @@ func ScheduleByDay(id string) []Day {
     }
 
     return days
+}
+
+
+func ArtistList(byLocation []Location) []Artist {
+	names := make(map[string]bool)
+	for _, loc := range byLocation {
+    	for _, evt := range loc.Events {
+    		if _, isInMap := names[evt.Name]; !isInMap {
+				names[evt.Name] = true
+			}
+    	}
+    }
+
+    artists := make([]Artist, 0, len(names))
+	for a, _ := range names {
+		artists = append(artists, getAritstByName(a))
+	}
+	return artists
 }
 
 

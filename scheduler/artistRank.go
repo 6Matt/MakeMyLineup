@@ -86,9 +86,9 @@ func computeRankForArtist(artist Artist, rankCache map[Artist]Rank, similarArtis
 	}
 }
 
-func rankArtists(username string, artists []Artist) map[Artist]int64 {
+func RankArtists(username string, artists []Artist) map[Artist]int64 {
 	// get user's library
-	library := getArtistsForUser("devrevan", 100)
+	library := getArtistsForUser(username, 100)
 	// fmt.Println("\n library of ", username, " size ", len(library), "\n", library)
 
 	// assign ranks to artists in user's library
@@ -118,7 +118,7 @@ func main() {
 	a = append(a, getAritstByName("Halsey"))            // not similar to in library (any depth)
 	a = append(a, getAritstByName("Tyler Joseph"))      // similar to artist in library (depth 1)
 	a = append(a, getAritstByName("Leathermouth"))      // similar to artist in library (depth 2)
-	rankedArtists := rankArtists("devrevan", a)
+	rankedArtists := RankArtists("devrevan", a)
 	for key, val := range rankedArtists {
 		fmt.Println(key.Name, val)
 	}
