@@ -1,5 +1,3 @@
-I used go-bootstrap (http://go-bootstrap.io/) to create a new project, which added the stuff below. I used the setting that doesn't set up a database - not sure if we need one
-
 ## Installation
 
 1. Install Go 1.4.x or greater, git, setup `$GOPATH`, and `PATH=$PATH:$GOPATH/bin`
