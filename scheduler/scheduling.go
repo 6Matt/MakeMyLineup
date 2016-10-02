@@ -1,7 +1,6 @@
 package scheduler
 
 import (
-	// "fmt"
 	"sort"
 )
 
@@ -37,7 +36,15 @@ type ByStartTime []SchedEvent
 
 func (a ByStartTime) Len() int 					{ return len(a) }
 func (a ByStartTime) Swap(i, j int) 			{ a[i], a[j] = a[j], a[i] }
-func (a ByStartTime) Less(i,j int) bool 		{ return a[i].Start.Time.Before(a[j].Start.Time) }
+func (a ByStartTime) Less(i,j int) bool { 
+	if a[i].Start.Time.Before(a[j].Start.Time) {
+		return true
+	}
+	if(a[i].Start.Time.Equal(a[j].Start.Time) && a[i].End.Time.Before(a[j].End.Time)) {
+		return true
+	}
+	return false
+}
 
 func max(a, b int64) int64 {
 	if a < b {
@@ -81,12 +88,12 @@ func weightedIntreval(schedByLoc []SchedEvent, rankings map[string]int64) []Sche
 
 //4 - change the Scheduled bool to true for chosen events (backtracking)
 	
-	for length := len(schedByLoc)-1; length >= 0; length-- {
+	for length := len(schedByLoc)-1; length >= 0; {
 		value := rankings[schedByLoc[length].Name] + 1
 
 		if maxValues[lastBefore[length]+1] + value > maxValues[length] {
 			schedByLoc[length].Scheduled = true;
-			length = lastBefore[length]+1
+			length = lastBefore[length]
 		} else {
 			length--;
 		}
